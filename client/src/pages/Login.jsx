@@ -48,6 +48,59 @@ const Login = () => {
   ] = useLoginUserMutation();
   const navigate = useNavigate();
 
+  const validateInputs = (type, inputs) => {
+    const nameRegex = /^[a-zA-Z\s]{2,50}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
+    if (type === "signup") {
+      const { name, email, password } = inputs;
+
+      if (!nameRegex.test(name)) {
+        toast.error(
+          "❌ Name must be 2-50 characters and contain only letters & spaces."
+        );
+        return false;
+      }
+
+      if (!emailRegex.test(email)) {
+        toast.error("📧 Please enter a valid email address.");
+        return false;
+      }
+
+      if (!passwordRegex.test(password)) {
+        toast.error(
+          "🔐 Password must be at least 6 characters and include letters & numbers."
+        );
+        return false;
+      }
+
+      toast.success("✅ Signup input is valid!");
+      return true;
+    }
+
+    if (type === "login") {
+      const { email, password } = inputs;
+
+      if (!emailRegex.test(email)) {
+        toast.error("📧 Invalid login email.");
+        return false;
+      }
+
+      if (!passwordRegex.test(password)) {
+        toast.error(
+          "🔐 Invalid login password. Must include letters & numbers."
+        );
+        return false;
+      }
+
+      toast.success("✅ Login input is valid!");
+      return true;
+    }
+
+    return false;
+  };
+
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
     if (type === "signup") {
@@ -59,22 +112,31 @@ const Login = () => {
 
   const handleRegistration = async (type) => {
     const inputData = type === "signup" ? signupInput : loginInput;
+
+    // Validate inputs
+    const isValid = validateInputs(type, inputData);
+    if (!isValid) {
+      // alert("Please enter valid input fields."); // You can replace this with custom UI feedback
+      return;
+    }
+
     const action = type === "signup" ? registerUser : loginUser;
     await action(inputData);
   };
 
   useEffect(() => {
-    if(registerIsSuccess && registerData){
-      toast.success(registerData.message || "Signup successful.")
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup successful.");
     }
-    if(registerError){
+    if (registerError) {
       toast.error(registerError.data.message || "Signup Failed");
     }
-    if(loginIsSuccess && loginData){
+    if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "Login successful.");
       navigate("/");
     }
-    if(loginError){ 
+    if (loginError) {
+      console.log("hello");
       toast.error(loginError.data.message || "login Failed");
     }
   }, [
